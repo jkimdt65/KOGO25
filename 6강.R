@@ -1,0 +1,143 @@
+knitr::opts_chunk$set(echo = TRUE)
+library(UsingR)
+library(MASS)
+# 1) 두 그룹 데이터 정의
+x <- c(0, 0, 0, 2, 4, 5, 13, 14, 14, 14, 15, 17, 17)  # 예: placebo 그룹
+y <- c(0, 6, 7, 8, 11, 13, 15, 16, 16, 16, 17, 18)    # 예: ephedra 그룹
+
+# 2) 두 그룹의 평균 비교 - 등분산 가정 O
+ans <- t.test(x, y, var.equal = TRUE)  # 등분산 가정하여 t-검정 수행
+
+# 3) 등분산 가정 t-검정의 신뢰구간 출력
+ans$conf.int   # 평균 차이에 대한 신뢰구간 출력
+
+# 4) 그룹별 분포 비교 - boxplot 그리기
+boxplot(list(placebo = x, ephedra = y), col = "grey")
+
+# 5) 두 그룹의 분산 동일성 검정 (F-test)
+var.test(x, y)  # 귀무가설: 두 집단의 분산이 같다
+
+# 6) 두 그룹의 평균 비교 - 등분산 가정 X (Welch's t-test)
+ans2 <- t.test(x, y)  # 기본: var.equal = FALSE
+
+# 7) Welch t-검정 신뢰구간 출력
+ans2$conf.int   # 평균 차이에 대한 신뢰구간 출력
+# 1) shoes 데이터셋 변수 이름 확인
+names(shoes)  # A: 신발 종류 A의 착용 전후 차이, B: 신발 종류 B
+
+# 2) 방법 1️⃣ : 두 집단 차이 벡터 직접 만들기
+ans1 <- t.test(shoes$A - shoes$B, conf.level = 0.9)
+# shoes$A - shoes$B 로 직접 차이를 구해 1-표본 t-검정으로 처리
+# 90% 신뢰구간으로 설정
+
+# ans1 신뢰구간 확인 (이미 $conf.int 에 포함됨)
+ans1$conf.int
+
+# 3) 방법 2️⃣ : t.test()의 paired = TRUE 옵션 사용
+ans2 <- t.test(shoes$A, shoes$B, paired = TRUE, conf.level = 0.9)
+# shoes$A 와 shoes$B 두 벡터를 짝지어 paired t-test 수행
+# 결과는 ans1과 동일해야 함 (차이를 직접 계산한 것과 동일)
+
+# ans2 신뢰구간 확인
+ans2$conf.int
+# 1) 두 그룹 데이터 정의
+x <- c(284, 279, 289, 292, 287, 295, 285, 279, 306, 298)  # 예: 그룹 X
+y <- c(298, 307, 297, 279, 291, 335, 299, 300, 306, 291)  # 예: 그룹 Y
+
+# 2) 두 그룹의 분산 동일성 검정 (F-test)
+var.test(x, y)
+# 귀무가설(H0): 두 그룹의 모분산이 같다
+# p-value < 0.05이면 분산이 다르다고 판단 → 등분산 가정 X
+
+# 3) 두 그룹의 평균 비교 (두 표본 t-검정)
+# var.equal = TRUE: 분산 동일하다고 가정하고 pooled t-test 수행
+t.test(x, y, var.equal = TRUE)
+# 귀무가설(H0): 두 그룹의 모평균이 같다
+# p-value < 0.05이면 두 그룹 평균에 유의한 차이가 있음
+# 1) 두 그룹 데이터 정의
+A <- c(5.8, 1.0, 1.1, 2.1, 2.5, 1.1, 1.0, 1.2, 3.2, 2.7)  # 그룹 A
+B <- c(1.5, 2.7, 6.6, 4.6, 1.1, 1.2, 5.7, 3.2, 1.2, 1.3)  # 그룹 B
+
+# 2) 두 그룹 간 중앙값(분포)의 차이를 Wilcoxon Rank Sum Test로 검정 (비모수)
+wilcox.test(A, B)
+# 귀무가설(H0): 두 그룹의 분포가 동일하다
+# (즉, 위치 차이가 없다)
+
+# 3) 신뢰구간 옵션 설정 시도
+# conf.int = TRUE로 해야 신뢰구간을 반환 (기본은 FALSE)
+# 단, wilcox.test()는 shift parameter(위치 차이)에 대한 신뢰구간만 지원함
+ans <- wilcox.test(A, B, conf.int = TRUE)
+
+ans$conf.int 
+# 1) 두 그룹 데이터 정의
+x <- c(77, 56, 64, 60, 57, 53, 72, 62, 65, 66)  # 예: 처리 전 점수
+y <- c(88, 74, 83, 68, 58, 50, 67, 64, 74, 60)  # 예: 처리 후 점수
+
+# 2) 짝비교 t-검정 (paired t-test)
+t.test(x, y, paired = TRUE)
+# 1) 두 그룹 데이터 정의
+x <- c(77, 56, 64, 60, 57, 53, 72, 62, 65, 66)  # 예: 처리 전 점수
+y <- c(88, 74, 83, 68, 58, 50, 67, 64, 74, 60)  # 예: 처리 후 점수
+
+# 2) 짝비교 Wilcoxon 부호순위검정
+ans <- wilcox.test(x, y, paired = TRUE, conf.int = TRUE, conf.level = 0.95)
+
+# 3) 신뢰구간 출력 시도
+ans$conf.int  # 결과 확인
+# 1) 세 그룹 데이터 정의
+may <- c(2166, 1568, 2233, 1882, 2019)
+sep <- c(2279, 2075, 2131, 2009, 1793)
+dec <- c(2226, 2154, 2583, 2010, 2190)
+
+# 2) 데이터 묶기: stack() 사용해 그룹과 값으로 구성된 long-format 데이터프레임 생성
+ex5 <- stack(list(may = may, sep = sep, dec = dec))
+ex5
+
+
+# 3) 일원분산분석 (oneway.test)
+oneway.test(values ~ ind, data = ex5, var.equal = TRUE)
+
+# 4) ANOVA 모형 적합 (aov)
+res <- aov(values ~ ind, data = ex5)
+res  # 적합된 모형 객체 확인
+
+# 5) ANOVA 분산분석표 출력
+summary(res)
+# 1) seed 고정 (재현성)
+set.seed(123)
+
+# 2) 각 그룹 데이터 생성
+A <- rnorm(15, mean = 50, sd = 5)
+B <- rnorm(15, mean = 60, sd = 5)
+C <- rnorm(15, mean = 65, sd = 5)
+
+# 3) stack() 사용하여 long-format 데이터프레임으로 변환
+exABC <- stack(list(A = A, B = B, C = C))
+exABC
+
+# 4) 그룹별 평균 확인
+aggregate(values ~ ind, data = exABC, mean)
+
+# 5) 일원분산분석 (oneway.test)
+oneway.test(values ~ ind, data = exABC, var.equal = TRUE)
+
+# 6) ANOVA 모형 적합
+res <- aov(values ~ ind, data = exABC)
+summary(res)
+
+# 7) 사후 Tukey HSD 다중비교
+TukeyHSD(res)
+
+# 8) 사후검정 시각화 (옵션)
+plot(TukeyHSD(res))
+# 1) 세 그룹 데이터 정의
+x <- c(63, 64, 95, 64, 60, 85)          # 예: test1 그룹
+y <- c(58, 56, 51, 84, 77)              # 예: test2 그룹
+z <- c(85, 79, 59, 89, 80, 71, 43)      # 예: test3 그룹
+
+# 2) stack() 사용해 long-format 데이터프레임 생성
+ex6 <- stack(list(test1 = x, test2 = y, test3 = z))
+ex6
+
+# 3) Kruskal-Wallis 검정 (비모수 일원분산분석)
+kruskal.test(values ~ ind, data = ex6)
